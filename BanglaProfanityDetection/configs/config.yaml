@@ -1,0 +1,56 @@
+# Dataset
+data:
+  train_path: "data/train.csv"
+  test_path: "data/test.csv"
+  text_column: "text"
+  label_column: "label"
+  test_size: 0.2
+  random_seed: 42
+
+# Model configurations
+models:
+  banglabert:
+    name: "sagorsarker/bangla-bert-base"
+    max_length: 256
+    batch_size: 16
+    learning_rate: 2.0e-5
+    epochs: 5
+    warmup_ratio: 0.1
+    weight_decay: 0.01
+    num_labels: 2
+
+  xlmr:
+    name: "xlm-roberta-base"
+    max_length: 256
+    batch_size: 16
+    learning_rate: 2.0e-5
+    epochs: 5
+    warmup_ratio: 0.1
+    weight_decay: 0.01
+    num_labels: 2
+
+# LLM baselines
+llm:
+  groq:
+    model: "llama-3.3-70b-versatile"
+    batch_size: 25
+    max_retries: 3
+    delay_between_batches: 2
+  gemini:
+    model: "gemini-2.0-flash-lite"
+    batch_size: 25
+
+# Training
+training:
+  output_dir: "results"
+  save_strategy: "epoch"
+  evaluation_strategy: "epoch"
+  load_best_model_at_end: true
+  metric_for_best_model: "f1"
+  num_runs: 3
+
+# Paths
+paths:
+  results: "results"
+  plots: "plots"
+  models: "saved_models"

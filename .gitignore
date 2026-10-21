@@ -1,0 +1,53 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+*.egg
+.venv/
+venv/
+env/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# C# / .NET
+bin/
+obj/
+*.exe
+*.dll
+*.pdb
+*.user
+*.suo
+*.cache
+*.vs/
+.vscode/
+
+# IDE
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# SQLite
+*.db
+
+# ML / Models
+saved_models/
+*.pt
+*.bin
+*.safetensors
+wandb/
+runs/
+.ipynb_checkpoints/
+
+# Data
+*.csv
+!data/README.md
