@@ -78,7 +78,7 @@ demo = gr.Interface(
         ["তুই একটা গাধা"],
         ["আজকের আবহাওয়া খুব সুন্দর"],
     ],
-    allow_flagging="never",
+    flagging_mode="never",
 )
 
 if __name__ == "__main__":

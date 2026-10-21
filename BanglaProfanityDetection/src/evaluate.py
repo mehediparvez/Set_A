@@ -15,19 +15,21 @@ from sklearn.metrics import (
 def compute_metrics(y_true, y_pred):
     return {
         "accuracy": accuracy_score(y_true, y_pred),
-        "f1": f1_score(y_true, y_pred, average="weighted"),
-        "precision": precision_score(y_true, y_pred, average="weighted"),
-        "recall": recall_score(y_true, y_pred, average="weighted"),
+        "f1": f1_score(y_true, y_pred, average="weighted", zero_division=0),
+        "precision": precision_score(y_true, y_pred, average="weighted", zero_division=0),
+        "recall": recall_score(y_true, y_pred, average="weighted", zero_division=0),
     }
 
 
-def get_confusion_matrix(y_true, y_pred):
-    return confusion_matrix(y_true, y_pred)
+def get_confusion_matrix(y_true, y_pred, labels=(0, 1)):
+    return confusion_matrix(y_true, y_pred, labels=list(labels))
 
 
 def get_classification_report(y_true, y_pred, labels=None):
     target_names = labels or ["non-toxic", "toxic"]
-    return classification_report(y_true, y_pred, target_names=target_names)
+    return classification_report(
+        y_true, y_pred, labels=[0, 1], target_names=target_names, zero_division=0
+    )
 
 
 def evaluate_model(model, tokenizer, texts, labels, max_length=256, batch_size=32):

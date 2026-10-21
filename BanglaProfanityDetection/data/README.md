@@ -34,10 +34,12 @@ After downloading, place files as:
 ```
 data/
 ├── README.md          (this file)
-├── train.csv          (training data)
-├── test.csv           (test data)
+├── train.csv          (the full labelled dataset)
 └── raw/               (optional: original downloaded files)
 ```
 
-If the dataset comes as a single file, the training notebooks will
-split it automatically using the configured test_size ratio.
+Only `train.csv` is needed. Every notebook and `main.py` step splits it with
+the same stratified `test_size` / `random_seed` from `configs/config.yaml`,
+so all models are evaluated on exactly the same held-out test samples.
+If your download already has separate train/test files, concatenate them
+into `train.csv`.

@@ -29,6 +29,12 @@ def test_confusion_matrix():
     assert cm[1][1] == 1  # true positives
 
 
+def test_confusion_matrix_single_class():
+    cm = get_confusion_matrix([0, 0], [0, 0])
+    assert cm.shape == (2, 2)
+    assert cm[0][0] == 2
+
+
 def test_aggregate_runs():
     runs = [
         {"accuracy": 0.9, "f1": 0.88},

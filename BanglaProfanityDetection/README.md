@@ -34,12 +34,14 @@ BanglaProfanityDetection/
 │   ├── predict.py               # Inference utilities
 │   ├── llm_baseline.py          # Groq/Gemini LLM zero-shot baseline
 │   ├── visualize.py             # Publication-ready chart generation
+│   ├── results.py               # Shared results format (save/load for all models)
 │   └── utils.py                 # Helper functions
 ├── tests/
 │   ├── test_dataset.py
 │   ├── test_model.py
 │   ├── test_evaluate.py
 │   ├── test_utils.py
+│   ├── test_results.py
 │   └── test_llm_baseline.py
 ├── notebooks/
 │   ├── 01_data_exploration.ipynb
@@ -66,7 +68,11 @@ pip install -r requirements.txt
 See `data/README.md` for dataset download instructions.
 
 ### 3. Configure
-Edit `configs/config.yaml` to set paths, hyperparameters, and API keys.
+Edit `configs/config.yaml` to set paths and hyperparameters.
+API keys are read from the environment: `GROQ_API_KEY` (preferred) or `GEMINI_API_KEY`.
+
+All approaches are evaluated on the same stratified test split of `data/train.csv`
+(`test_size` / `random_seed` in the config), so their scores are directly comparable.
 
 ## Running the Project
 
@@ -95,6 +101,8 @@ jupyter notebook notebooks/05_llm_baseline.ipynb
 ```bash
 jupyter notebook notebooks/06_evaluation_and_visualization.ipynb
 ```
+Notebook 06 loads whatever notebooks 02-05 saved under `results/` and plots it;
+models that have not been run yet are left out.
 
 ### Step 6: Demo App
 ```bash
@@ -104,12 +112,24 @@ python demo.py
 
 ### Alternative: Run Full Pipeline via CLI
 ```bash
-python main.py --step all        # Train + Evaluate + Visualize
-python main.py --step train      # Train models only
-python main.py --step evaluate   # Evaluate saved models
-python main.py --step visualize  # Generate plots
+python main.py --step all        # Train + Evaluate + Baselines + Visualize
+python main.py --step train      # Fine-tune BanglaBERT and XLM-R (3 runs + learning curve)
+python main.py --step evaluate   # Evaluate saved fine-tuned models
+python main.py --step baseline   # better_profanity library baseline
+python main.py --step llm        # LLM zero-shot baseline (skipped without an API key)
+python main.py --step visualize  # Generate plots from everything in results/
 python main.py --step demo       # Launch Gradio demo
 ```
+
+### Results Layout
+Notebooks and the CLI write the same files, one directory per model
+(`better_profanity`, `banglabert`, `xlmr`, `llm`):
+
+| File | Contents | Written for |
+|------|----------|-------------|
+| `results/<model>/evaluation.json` | metrics, inference speed, confusion matrix, FP/FN counts | all models |
+| `results/<model>/summary.json` | mean / std over the training runs | fine-tuned models |
+| `results/<model>/learning_curve.json` | metrics at 25% / 50% / 100% of training data | fine-tuned models |
 
 ### Run Tests
 ```bash

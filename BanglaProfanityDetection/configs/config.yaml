@@ -1,7 +1,7 @@
 # Dataset
 data:
+  # Single labelled CSV; every step splits it into train/test with test_size and random_seed
   train_path: "data/train.csv"
-  test_path: "data/test.csv"
   text_column: "text"
   label_column: "label"
   test_size: 0.2

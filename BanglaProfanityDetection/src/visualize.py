@@ -2,7 +2,6 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
-from sklearn.metrics import confusion_matrix
 
 
 def set_style():
@@ -58,7 +57,9 @@ def plot_accuracy_vs_speed(results, save_path=None):
             fontsize=9,
         )
 
-    ax.set_xlabel("Inference Speed (samples/sec)")
+    if any(d.get("samples_per_second", 0) > 0 for d in results.values()):
+        ax.set_xscale("log")
+    ax.set_xlabel("Inference Speed (samples/sec, log scale)")
     ax.set_ylabel("Accuracy")
     ax.set_title("Accuracy vs. Inference Speed")
     ax.legend()
@@ -151,9 +152,22 @@ def plot_error_distribution(error_counts, save_path=None):
 
 def generate_all_plots(results, curves, cm_dict, error_counts, plots_dir="plots"):
     os.makedirs(plots_dir, exist_ok=True)
-    plot_model_comparison(results, os.path.join(plots_dir, "model_comparison.png"))
-    plot_accuracy_vs_speed(results, os.path.join(plots_dir, "accuracy_vs_speed.png"))
-    plot_learning_curves(curves, os.path.join(plots_dir, "learning_curves.png"))
-    plot_confusion_matrices(cm_dict, os.path.join(plots_dir, "confusion_matrices.png"))
-    plot_error_distribution(error_counts, os.path.join(plots_dir, "error_distribution.png"))
-    print(f"All plots saved to {plots_dir}/")
+    saved = []
+    # Each plot is skipped when the results needed for it have not been produced yet
+    if results:
+        plot_model_comparison(results, os.path.join(plots_dir, "model_comparison.png"))
+        saved.append("model_comparison.png")
+    if any(d.get("samples_per_second", 0) > 0 for d in results.values()):
+        plot_accuracy_vs_speed(results, os.path.join(plots_dir, "accuracy_vs_speed.png"))
+        saved.append("accuracy_vs_speed.png")
+    if curves:
+        plot_learning_curves(curves, os.path.join(plots_dir, "learning_curves.png"))
+        saved.append("learning_curves.png")
+    if cm_dict:
+        plot_confusion_matrices(cm_dict, os.path.join(plots_dir, "confusion_matrices.png"))
+        saved.append("confusion_matrices.png")
+    if error_counts:
+        plot_error_distribution(error_counts, os.path.join(plots_dir, "error_distribution.png"))
+        saved.append("error_distribution.png")
+    print(f"Saved {len(saved)} plots to {plots_dir}/: {', '.join(saved)}")
+    return saved
