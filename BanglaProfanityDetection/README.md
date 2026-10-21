@@ -19,6 +19,8 @@ This project compares multiple approaches for Bangla toxic comment classificatio
 BanglaProfanityDetection/
 ├── README.md
 ├── requirements.txt
+├── main.py                      # CLI entry point for full pipeline
+├── Makefile                     # Automation shortcuts
 ├── configs/
 │   └── config.yaml              # Hyperparameters and paths
 ├── data/
@@ -27,10 +29,18 @@ BanglaProfanityDetection/
 │   ├── __init__.py
 │   ├── dataset.py               # Dataset loading and preprocessing
 │   ├── model.py                 # Model definitions
-│   ├── train.py                 # Training loop
-│   ├── evaluate.py              # Evaluation metrics
+│   ├── train.py                 # Training loop with multi-run support
+│   ├── evaluate.py              # Evaluation metrics and error analysis
 │   ├── predict.py               # Inference utilities
+│   ├── llm_baseline.py          # Groq/Gemini LLM zero-shot baseline
+│   ├── visualize.py             # Publication-ready chart generation
 │   └── utils.py                 # Helper functions
+├── tests/
+│   ├── test_dataset.py
+│   ├── test_model.py
+│   ├── test_evaluate.py
+│   ├── test_utils.py
+│   └── test_llm_baseline.py
 ├── notebooks/
 │   ├── 01_data_exploration.ipynb
 │   ├── 02_baseline_better_profanity.ipynb
@@ -90,6 +100,22 @@ jupyter notebook notebooks/06_evaluation_and_visualization.ipynb
 ```bash
 cd app
 python demo.py
+```
+
+### Alternative: Run Full Pipeline via CLI
+```bash
+python main.py --step all        # Train + Evaluate + Visualize
+python main.py --step train      # Train models only
+python main.py --step evaluate   # Evaluate saved models
+python main.py --step visualize  # Generate plots
+python main.py --step demo       # Launch Gradio demo
+```
+
+### Run Tests
+```bash
+make test
+# or
+cd .. && python -m pytest BanglaProfanityDetection/tests/ -v
 ```
 
 ## Visualizations Generated
