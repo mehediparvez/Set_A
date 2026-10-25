@@ -45,6 +45,8 @@ def step_train(config):
 
     results_dir = config["paths"]["results"]
     num_runs = config["training"]["num_runs"]
+    seed = config["data"]["random_seed"]
+    val_size = config["training"].get("val_size", 0.1)
 
     for key in ["banglabert", "xlmr"]:
         model_cfg = config["models"][key]
@@ -60,6 +62,8 @@ def step_train(config):
             model_cfg,
             output_dir=results_dir,
             num_runs=num_runs,
+            seed=seed,
+            val_size=val_size,
         )
         summary = aggregate_runs(all_metrics)
         save_metrics(summary, os.path.join(results_dir, key, "summary.json"))
@@ -74,6 +78,8 @@ def step_train(config):
             train_labels, test_labels,
             model_cfg,
             output_dir=results_dir,
+            seed=seed,
+            val_size=val_size,
         )
         save_metrics(lc_results, os.path.join(results_dir, key, "learning_curve.json"))
 

@@ -65,7 +65,11 @@ pip install -r requirements.txt
 ```
 
 ### 2. Download Dataset
-See `data/README.md` for dataset download instructions.
+See `data/README.md` for where to download a dataset, then convert it to `data/train.csv`:
+```bash
+python data/prepare_data.py path/to/download.csv                         # show its columns
+python data/prepare_data.py path/to/download.csv --text-col sentence --label-col hate
+```
 
 ### 3. Configure
 Edit `configs/config.yaml` to set paths and hyperparameters.
@@ -86,7 +90,7 @@ jupyter notebook notebooks/01_data_exploration.ipynb
 jupyter notebook notebooks/02_baseline_better_profanity.ipynb
 ```
 
-### Step 3: Fine-tune Models (run on Kaggle/Colab with GPU)
+### Step 3: Fine-tune Models (run on Colab/Kaggle with GPU; see "Training on Google Colab")
 ```bash
 jupyter notebook notebooks/03_finetune_banglabert.ipynb
 jupyter notebook notebooks/04_finetune_xlmr.ipynb
@@ -137,6 +141,45 @@ make test
 # or
 cd .. && python -m pytest BanglaProfanityDetection/tests/ -v
 ```
+
+## Training on Google Colab
+
+Every notebook starts with a setup cell that only runs on Colab. It mounts Google Drive,
+clones this branch into `MyDrive/Set_A`, `cd`s into `notebooks/` and installs dependencies.
+Results and models are written to Drive, so they survive disconnects.
+
+1. Push this branch to GitHub (the setup cell clones `bangal_profanity`).
+2. Open a notebook in Colab: File > Open notebook > GitHub, then search `mehediparvez/Set_A` and pick the `bangal_profanity` branch.
+3. Runtime > Change runtime type > **T4 GPU**.
+4. Run the setup cell once. Then upload `train.csv` into
+   `MyDrive/Set_A/BanglaProfanityDetection/data/` (Drive web UI or the Colab file browser).
+5. Run the notebooks in order: 01, 02, 03 (BanglaBERT), 04 (XLM-R), 05 (LLM, needs `GROQ_API_KEY`
+   set via Colab Secrets or `os.environ`), 06 (plots).
+6. If a session disconnects, re-open the notebook and run it again. Finished runs
+   (`results/<model>/run_*/metrics.json`) are skipped automatically.
+7. Download `results/` and `plots/` from Drive, or copy `results/bangla-bert-base/run_1/best_model`
+   locally to run the demo.
+
+### Expected time (free T4, ~30k comments, default config)
+| Job | Time |
+|-----|------|
+| better_profanity baseline | < 1 min |
+| BanglaBERT: 3 runs + learning curve (25/50/100%) | ~2-3 h |
+| XLM-R: 3 runs + learning curve | ~3-4 h |
+| LLM baseline (Groq free tier) | ~15-30 min |
+| Evaluation + plots | ~10 min |
+
+That's roughly 5-7 GPU hours in total. Free Colab sessions disconnect, so plan for 2-3 sessions
+(e.g. one per model). Early stopping usually shortens this. Setting `training.num_runs: 1` roughly
+halves it, but then there are no error bars.
+
+Disk: only `run_1/best_model` is kept per model (~0.7 GB BanglaBERT, ~1.1 GB XLM-R). Epoch
+checkpoints and the models from the other runs are deleted, so this fits the free 15 GB Drive.
+
+### Training on a local 4 GB GPU
+It's possible but slow (roughly 15-25 h for everything). In `configs/config.yaml` set
+`max_length: 128`, `batch_size: 8` (BanglaBERT) / `4` (XLM-R),
+`gradient_accumulation_steps: 2` / `4`, and if XLM-R still runs out of memory, `gradient_checkpointing: true`.
 
 ## Visualizations Generated
 

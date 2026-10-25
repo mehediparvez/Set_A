@@ -8,6 +8,8 @@ data:
   random_seed: 42
 
 # Model configurations
+# Defaults fit a 16 GB GPU (Colab/Kaggle T4). For a 4 GB GPU use max_length 128,
+# batch_size 4-8 and gradient_accumulation_steps 2-4 (optionally gradient_checkpointing: true).
 models:
   banglabert:
     name: "sagorsarker/bangla-bert-base"
@@ -48,6 +50,8 @@ training:
   load_best_model_at_end: true
   metric_for_best_model: "f1"
   num_runs: 3
+  # Fraction of the training split held out for early stopping / best-model selection
+  val_size: 0.1
 
 # Paths
 paths:
