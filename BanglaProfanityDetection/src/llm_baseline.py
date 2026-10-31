@@ -7,19 +7,24 @@ from .model import LABEL_MAP
 
 
 def _parse_groq_response(response_text, num_comments):
+    # Reasoning models (e.g. Qwen) may prepend their thinking in <think> tags
+    response_text = re.sub(r"<think>.*?(</think>|$)", "", response_text or "", flags=re.S | re.I)
     labels = []
     for line in response_text.strip().split("\n"):
-        line = line.strip()
-        match = re.match(r"^\d+[\.\):\-]\s*(toxic|non-toxic|non toxic)", line, re.IGNORECASE)
+        # Ignore markdown emphasis such as "1. **toxic**"
+        line = line.strip().replace("*", "").replace("`", "")
+        match = re.match(r"^\d+\s*[\.\):\-]\s*(non[\s_\-]?toxic|toxic)\b", line, re.IGNORECASE)
         if match:
-            label_str = match.group(1).lower().replace(" ", "-")
+            label_str = match.group(1).lower()
             labels.append(1 if label_str == "toxic" else 0)
     if len(labels) != num_comments:
+        print(f"Could not parse {num_comments} labels (got {len(labels)}). "
+              f"Reply started with: {response_text.strip()[:200]!r}")
         return None
     return labels
 
 
-def classify_batch_groq(texts, client, model="llama-3.3-70b-versatile"):
+def classify_batch_groq(texts, client, model="llama-3.3-70b-versatile", reasoning_effort=None):
     prompt_lines = [f"{i+1}. {t}" for i, t in enumerate(texts)]
     prompt = (
         "Classify each Bangla comment as 'toxic' or 'non-toxic'. "
@@ -28,11 +33,16 @@ def classify_batch_groq(texts, client, model="llama-3.3-70b-versatile"):
         "Comments:\n" + "\n".join(prompt_lines)
     )
 
+    extra = {}
+    if reasoning_effort:
+        # e.g. "none" turns off thinking on Qwen, leaving the token budget for the answer
+        extra["reasoning_effort"] = reasoning_effort
     response = client.chat.completions.create(
         model=model,
         messages=[{"role": "user", "content": prompt}],
         temperature=0,
-        max_tokens=1024,
+        max_tokens=2048,
+        **extra,
     )
     return _parse_groq_response(response.choices[0].message.content, len(texts))
 
@@ -59,6 +69,7 @@ def run_llm_baseline(
     delay=2,
     max_retries=3,
     provider="groq",
+    reasoning_effort=None,
 ):
     all_preds = [None] * len(texts)
     failed_indices = []
@@ -71,7 +82,9 @@ def run_llm_baseline(
         for attempt in range(max_retries):
             try:
                 if provider == "groq":
-                    batch_labels = classify_batch_groq(batch_texts, client, model_name)
+                    batch_labels = classify_batch_groq(
+                        batch_texts, client, model_name, reasoning_effort
+                    )
                 else:
                     batch_labels = classify_batch_gemini(batch_texts, client)
 

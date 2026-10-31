@@ -34,7 +34,12 @@ models:
 # LLM baselines
 llm:
   groq:
+    # Free-tier options: "qwen/qwen3.8-27b" (preview), "llama-3.1-8b-instant", "openai/gpt-oss-20b".
+    # llama-3.3-70b-versatile now needs an Enterprise Groq account.
     model: "qwen/qwen3.8-27b"
+    # "none" disables Qwen's reasoning so the reply is just the numbered list.
+    # Remove for models that don't support it (gpt-oss: use low/medium/high).
+    reasoning_effort: "none"
     batch_size: 25
     max_retries: 3
     delay_between_batches: 2

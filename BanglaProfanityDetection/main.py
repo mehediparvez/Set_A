@@ -170,6 +170,7 @@ def step_llm(config):
         delay=llm_cfg.get("delay_between_batches", 2),
         max_retries=llm_cfg.get("max_retries", 3),
         provider=provider,
+        reasoning_effort=llm_cfg.get("reasoning_effort"),
     )
     inference_time = time.time() - start_time
 
